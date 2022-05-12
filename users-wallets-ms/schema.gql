@@ -1,0 +1,85 @@
+type WalletType {
+  id: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  incoming: Float
+  outgoing: Float
+  actuallyBalance: Float
+  accountClosed: Boolean
+  accountLocked: Boolean
+  user: UserType
+}
+
+# A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+scalar DateTime
+
+type UserType {
+  id: String
+  name: String
+  email: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  wallets: [WalletType]
+}
+
+type Query {
+  user(id: String): UserType
+  users: UserType
+  wallet(id: String): WalletType
+  wallets: [WalletType]
+}
+
+type Mutation {
+  createUser(input: CreateUserInput): UserType
+  deleteUser(id: String): UserType
+  recoverUser(id: String): UserType
+  createWallet(userId: String): WalletType
+  closeWallet(input: CloseWalletInput): WalletType
+  deposit(input: OperationWithOneWalletInput): WalletType
+  withdraw(input: OperationWithOneWalletInput): WalletType
+  transfer(input: CreateTransferInput): WalletType
+}
+
+# Input for create user
+input CreateUserInput {
+  # Name of user
+  name: String
+
+  # Unique email of user
+  email: String
+}
+
+# Input for close wallet function
+input CloseWalletInput {
+  # Unique ID of wallet
+  id: String
+
+  # Flag for check wallet
+  flag: Boolean
+}
+
+# Input for transfer function between two wallets
+input OperationWithOneWalletInput {
+  # Transferred money
+  amount: Float
+
+  # Descriptions for transactions
+  description: String
+
+  # Id of the wallet to which you want to transfer money
+  to: String
+}
+
+input CreateTransferInput {
+ # Transferred money
+  amount:  Float
+
+ #Descriptions for transactions
+  description:  String
+
+  # Id of the wallet to which you want to transfer money
+  to:  String
+ #Id of the sender wallet'
+  from:  String
+}
