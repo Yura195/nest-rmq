@@ -71,7 +71,6 @@ export class WalletsService {
     const queryRunner = await this._connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('SERIALIZABLE');
-
     try {
       const wallet = await this.wallet(to);
       this._logger.debug({ wallet });
