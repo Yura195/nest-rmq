@@ -14,4 +14,10 @@ export class TransactionsController {
     this._logger.debug({ payload });
     return this._transactionsService.create(payload);
   }
+
+  @MessagePattern({ cmd: 'show-transactions' })
+  async showTransactions(@Payload() walletId: string) {
+    this._logger.debug(walletId);
+    return this._transactionsService.transactions(walletId);
+  }
 }

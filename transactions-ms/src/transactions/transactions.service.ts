@@ -13,11 +13,11 @@ export class TransactionsService {
     private readonly _transactionRepository: Repository<TransactionEntity>,
   ) {}
 
-  async transactions(wallet_id: string): Promise<TransactionEntity[]> {
+  async transactions(walletId: string): Promise<TransactionEntity[]> {
     this._logger.debug('show all transactions method');
-    this._logger.debug(wallet_id);
+    this._logger.debug(walletId);
     return await this._transactionRepository.find({
-      where: [{ to: wallet_id }, { from: wallet_id }],
+      where: [{ to: walletId }, { from: walletId }],
     });
   }
 

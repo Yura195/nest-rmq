@@ -1,10 +1,18 @@
 import { CreateTransferInput } from './graphql/inputs/create-transfer.input';
 import { OperationWithOneWalletInput } from './graphql/inputs/operation-with-one-wallet.input';
 import { WalletType } from './graphql/types/wallet.type';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { Logger } from '@nestjs/common';
 import { WalletsService } from './wallets.service';
 import { CloseWalletInput } from './graphql/inputs/close-wallet.input';
+import { TransactionType } from './graphql/types/transaction.type';
 
 @Resolver(() => WalletType)
 export class WalletsResolver {
@@ -25,6 +33,11 @@ export class WalletsResolver {
   async wallets(): Promise<WalletType[]> {
     this._logger.debug('get all wallets resolver');
     return await this._walletService.wallets();
+  }
+
+  @ResolveField(() => [TransactionType])
+  async showTransactions(@Parent() wallet: WalletType) {
+    return await this._walletService.showTransactions(wallet.id);
   }
 
   @Mutation(() => WalletType, { name: 'createWallet' })

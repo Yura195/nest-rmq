@@ -1,3 +1,13 @@
+directive @key(fields: String) on OBJECT | INTERFACE
+
+directive @extends on OBJECT | INTERFACE
+
+directive @external on OBJECT | FIELD_DEFINITION
+
+directive @requires(fields: String) on FIELD_DEFINITION
+
+directive @provides(fields: String) on FIELD_DEFINITION
+
 type WalletType {
   id: String
   createdAt: DateTime
@@ -8,6 +18,7 @@ type WalletType {
   accountClosed: Boolean
   accountLocked: Boolean
   user: UserType
+  showTransactions: [TransactionType]
 }
 
 # A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
@@ -23,11 +34,26 @@ type UserType {
   wallets: [WalletType]
 }
 
+type TransactionType {
+  id: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  amount: Float
+  description: String
+  to: String
+  from: String
+}
+
 type Query {
+  _service: _Service
   user(id: String): UserType
   users: UserType
   wallet(id: String): WalletType
   wallets: [WalletType]
+}
+
+type _Service {
+  sdl: String
 }
 
 type Mutation {
@@ -37,8 +63,8 @@ type Mutation {
   createWallet(userId: String): WalletType
   closeWallet(input: CloseWalletInput): WalletType
   deposit(input: OperationWithOneWalletInput): WalletType
-  withdraw(input: OperationWithOneWalletInput): WalletType
   transfer(input: CreateTransferInput): WalletType
+  withdraw(input: OperationWithOneWalletInput): WalletType
 }
 
 # Input for create user
@@ -71,15 +97,17 @@ input OperationWithOneWalletInput {
   to: String
 }
 
+# Input for transfer function between two wallets
 input CreateTransferInput {
- # Transferred money
-  amount:  Float
+  # Transferred money
+  amount: Float
 
- #Descriptions for transactions
-  description:  String
+  # Descriptions for transactions
+  description: String
 
   # Id of the wallet to which you want to transfer money
-  to:  String
- #Id of the sender wallet'
-  from:  String
+  to: String
+
+  # Id of the sender wallet
+  from: String
 }

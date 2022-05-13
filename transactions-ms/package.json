@@ -26,6 +26,8 @@
     "migration:revert": "npm run typeorm:cli -- migration:revert"
   },
   "dependencies": {
+    "@apollo/federation": "^0.36.1",
+    "@apollo/subgraph": "^0.4.2",
     "@nestjs/apollo": "^10.0.11",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^2.0.0",

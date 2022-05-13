@@ -14,6 +14,7 @@ import { Connection, Repository } from 'typeorm';
 import { CloseWalletDto } from './dto/close-wallet.dto';
 import { OperationWithOneWalletDto } from './dto/operation-with-one-wallet.dto';
 import { WalletEntity } from './entities/wallet.entity';
+import { TransactionType } from './graphql/types/transaction.type';
 
 @Injectable()
 export class WalletsService {
@@ -98,6 +99,7 @@ export class WalletsService {
       const transaction = await lastValueFrom(response);
 
       this._logger.debug({ transaction });
+      this._walletRepository.save(wallet);
       await queryRunner.commitTransaction();
       return transaction.id;
     } catch (e) {
@@ -149,6 +151,7 @@ export class WalletsService {
       const transaction = await lastValueFrom(response);
 
       this._logger.debug({ transaction });
+      this._walletRepository.save(wallet);
       await queryRunner.commitTransaction();
       return transaction.id;
     } catch (e) {
@@ -216,6 +219,8 @@ export class WalletsService {
       const transaction = await lastValueFrom(response);
 
       this._logger.debug({ transaction });
+      this._walletRepository.save(wallet);
+      this._walletRepository.save(senderWallet);
       await queryRunner.commitTransaction();
       return transaction.id;
     } catch (e) {
@@ -224,5 +229,16 @@ export class WalletsService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async showTransactions(walletId: string): Promise<TransactionType[]> {
+    this._logger.debug(walletId);
+    const response = this._client
+      .send({ cmd: 'show-transactions' }, { walletId })
+      .pipe(timeout(3000));
+
+    const transactions = await lastValueFrom(response);
+    this._logger.debug({ transactions });
+    return transactions;
   }
 }

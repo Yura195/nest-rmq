@@ -1,3 +1,13 @@
+directive @key(fields: String) on OBJECT | INTERFACE
+
+directive @extends on OBJECT | INTERFACE
+
+directive @external on OBJECT | FIELD_DEFINITION
+
+directive @requires(fields: String) on FIELD_DEFINITION
+
+directive @provides(fields: String) on FIELD_DEFINITION
+
 type TransactionType {
   id: String
   createdAt: DateTime
@@ -8,10 +18,14 @@ type TransactionType {
   from: String
 }
 
-# A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 scalar DateTime
 
 type Query {
+  _service: _Service
   transaction(id: String): TransactionType
   transactions(wallet_id: String): [TransactionType]
+}
+
+type _Service {
+  sdl: String
 }
