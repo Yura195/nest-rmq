@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Query, Resolver, Mutation } from '@nestjs/graphql';
+import { CreateTransactionInput } from './graphql/inputs/create-transaction.input';
 import { TransactionType } from './graphql/types/transaction.type';
 import { TransactionsService } from './transactions.service';
 
@@ -26,4 +27,12 @@ export class TransactionsResolver {
     this._logger.debug(wallet_id);
     return await this._transactionsService.transactions(wallet_id);
   }
+
+  // @Mutation(() => TransactionType, { description: 'Create transaction' })
+  // async createTransaction(
+  //   @Args('createTransactionInput')
+  //   createTransactionInput: CreateTransactionInput,
+  // ): Promise<TransactionType> {
+  //   return await this._transactionsService.create(createTransactionInput);
+  // }
 }

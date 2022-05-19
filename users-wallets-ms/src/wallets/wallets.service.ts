@@ -101,7 +101,7 @@ export class WalletsService {
       this._logger.debug({ transaction });
       this._walletRepository.save(wallet);
       await queryRunner.commitTransaction();
-      return transaction.id;
+      return transaction;
     } catch (e) {
       this._logger.error(e, 'deposit method error');
       await queryRunner.rollbackTransaction();

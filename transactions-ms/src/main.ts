@@ -23,6 +23,7 @@ async function bootstrap() {
     options: {
       urls: [`amqps://${user}:${password}@${host}`],
       queue: queuName,
+      noAck: false,
     },
   });
 

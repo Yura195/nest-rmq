@@ -19,7 +19,7 @@ export class UsersResolver {
     return await this._usersService.user(id);
   }
 
-  @Query(() => UserType)
+  @Query(() => [UserType])
   async users(): Promise<UserType[]> {
     this._logger.debug('show all users resolver');
     return await this._usersService.users();
