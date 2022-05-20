@@ -1,3 +1,4 @@
+import { State } from './enums/state.enum';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import {
   HttpException,
@@ -19,6 +20,7 @@ import { TransactionType } from './graphql/types/transaction.type';
 @Injectable()
 export class WalletsService {
   private readonly _logger = new Logger(WalletsService.name);
+  private _stateTransaction = State.WORKING;
   constructor(
     @InjectRepository(WalletEntity)
     private readonly _walletRepository: Repository<WalletEntity>,
@@ -93,19 +95,26 @@ export class WalletsService {
       wallet.incoming += amount;
 
       const response = this._client
-        .send({ cmd: 'create-transaction' }, { amount, description, to })
+        .emit({ cmd: 'create-transaction' }, { amount, description, to })
         .pipe(timeout(3000));
 
       const transaction = await lastValueFrom(response);
-
+      if (this._stateTransaction === State.PREPARED) {
+        await queryRunner.commitTransaction();
+        this._walletRepository.save(wallet);
+      } else {
+        throw new Error('Error for create transactions');
+      }
       this._logger.debug({ transaction });
-      this._walletRepository.save(wallet);
-      await queryRunner.commitTransaction();
-      return transaction;
+      return transaction.id;
     } catch (e) {
-      this._logger.error(e, 'deposit method error');
+      this._logger.error(e, 'transfer method error');
+      this._client.emit('response-to-transaction', {
+        statе: State.ABORTED,
+      });
       await queryRunner.rollbackTransaction();
     } finally {
+      this._stateTransaction = State.WORKING;
       await queryRunner.release();
     }
   }
@@ -145,19 +154,26 @@ export class WalletsService {
       wallet.incoming -= amount;
 
       const response = this._client
-        .send({ cmd: 'create-transaction' }, { amount, description, to })
+        .emit({ cmd: 'create-transaction' }, { amount, description, to })
         .pipe(timeout(3000));
 
       const transaction = await lastValueFrom(response);
-
+      if (this._stateTransaction === State.PREPARED) {
+        await queryRunner.commitTransaction();
+        this._walletRepository.save(wallet);
+      } else {
+        throw new Error('Error for create transactions');
+      }
       this._logger.debug({ transaction });
-      this._walletRepository.save(wallet);
-      await queryRunner.commitTransaction();
       return transaction.id;
     } catch (e) {
-      this._logger.error(e, 'withdraw method error');
+      this._logger.error(e, 'transfer method error');
+      this._client.emit('response-to-transaction', {
+        statе: State.ABORTED,
+      });
       await queryRunner.rollbackTransaction();
     } finally {
+      this._stateTransaction = State.WORKING;
       await queryRunner.release();
     }
   }
@@ -213,20 +229,28 @@ export class WalletsService {
       wallet.incoming += amount;
 
       const response = this._client
-        .send({ cmd: 'create-transaction' }, { amount, description, to, from })
+        .emit({ cmd: 'create-transaction' }, { amount, description, to, from })
         .pipe(timeout(3000));
 
       const transaction = await lastValueFrom(response);
-
+      if (this._stateTransaction === State.PREPARED) {
+        await queryRunner.commitTransaction();
+        this._walletRepository.save(wallet);
+        this._walletRepository.save(senderWallet);
+      } else {
+        throw new Error('Error for create transactions');
+      }
       this._logger.debug({ transaction });
-      this._walletRepository.save(wallet);
-      this._walletRepository.save(senderWallet);
-      await queryRunner.commitTransaction();
+
       return transaction.id;
     } catch (e) {
       this._logger.error(e, 'transfer method error');
+      this._client.emit('response-to-transaction', {
+        statе: State.ABORTED,
+      });
       await queryRunner.rollbackTransaction();
     } finally {
+      this._stateTransaction = State.WORKING;
       await queryRunner.release();
     }
   }
@@ -240,5 +264,9 @@ export class WalletsService {
     const transactions = await lastValueFrom(response);
     this._logger.debug({ transactions });
     return transactions;
+  }
+
+  async changeState(state: State): Promise<void> {
+    this._stateTransaction = state;
   }
 }
